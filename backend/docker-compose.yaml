@@ -1,0 +1,17 @@
+services:
+  api:
+    build: .
+    volumes:
+      - "./settings.yaml:/app/settings.yaml:ro" # Read-only settings file
+      - "data:/app/data"
+    restart: always
+    ports:
+      - "8888:8000"
+    environment:
+      FORWARDED_ALLOW_IPS: "*"
+      TZ: "Europe/Moscow"
+      RECREATE_DATABASE: ${RECREATE_DATABASE:-false}
+
+volumes:
+  data:
+    driver: local
