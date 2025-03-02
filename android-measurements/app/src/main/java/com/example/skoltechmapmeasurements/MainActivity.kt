@@ -34,6 +34,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -151,6 +152,8 @@ class MainActivity : ComponentActivity() {
         val latestLocation by latestLocationFlow.collectAsStateWithLifecycle()
         val bluetoothDevices by bluetoothDevicesFlow.collectAsStateWithLifecycle()
         var statusText by remember { mutableStateOf("Ready to start") }
+        val checkpointId by remember { mutableIntStateOf(SessionManager.currentCheckpointId) }
+        val checkpointSent by remember { mutableStateOf(SessionManager.checkpointSent) }
 
         // Observe EventBus for data updates
         DisposableEffect(Unit) {
@@ -264,6 +267,16 @@ class MainActivity : ComponentActivity() {
                     Log.d(TAG, "Stopped measurement service")
                 }
             )
+
+            Button(
+                onClick = {
+                    SessionManager.incrementCheckpointId()
+                },
+                enabled = isSessionActive && checkpointSent,
+                modifier = Modifier.weight(1f)
+            ) {
+                Text("Checkpoint $checkpointId" + if (!checkpointSent) " (sending...)" else "")
+            }
 
             Card(
                 modifier = Modifier.fillMaxWidth(),

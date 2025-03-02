@@ -213,6 +213,6 @@ class BluetoothScanner(private val context: Context) {
     }
     
     companion object {
-        private const val SCAN_RESTART_INTERVAL = 1_000L // 1 second
+        private const val SCAN_RESTART_INTERVAL = 6_000L // ms
     }
 }

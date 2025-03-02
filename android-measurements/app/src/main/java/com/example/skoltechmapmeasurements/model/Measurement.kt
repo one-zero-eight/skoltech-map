@@ -5,6 +5,7 @@ import java.util.UUID
 
 data class Measurement(
     @SerializedName("session_id") val sessionId: String,
+    @SerializedName("checkpoint_id") val checkpointId: Int?,
     @SerializedName("timestamp") val timestamp: Long,
     @SerializedName("location") val location: AnyLocation?,
     @SerializedName("bluetooth_devices") val bluetoothDevices: List<BluetoothDevice>?,
@@ -42,14 +43,22 @@ data class DeviceInfo(
 
 object SessionManager {
     private var currentSessionId: String? = null
+    var currentCheckpointId: Int = 0
+    var checkpointSent: Boolean = false
 
     fun startNewSession(): String {
         currentSessionId = UUID.randomUUID().toString()
+        currentCheckpointId = 0
         return currentSessionId!!
     }
 
     fun getCurrentSessionId(): String? {
         return currentSessionId
+    }
+
+    fun incrementCheckpointId() {
+        currentCheckpointId++
+        checkpointSent = false
     }
 
     fun endSession() {

@@ -228,6 +228,8 @@ class MeasurementService : Service() {
     
     private suspend fun sendMeasurements(deviceInfo: DeviceInfo) {
         val currentSessionId = SessionManager.getCurrentSessionId() ?: return
+        val checkpointSent = SessionManager.checkpointSent
+        val checkpointId = if (!checkpointSent) SessionManager.currentCheckpointId else null
         val timestamp = System.currentTimeMillis()
         
         try {
@@ -237,6 +239,7 @@ class MeasurementService : Service() {
                 sendMeasurement(
                     Measurement(
                         sessionId = currentSessionId,
+                        checkpointId = checkpointId,
                         timestamp = timestamp,
                         location = fusedLocation,
                         bluetoothDevices = null,
@@ -252,6 +255,7 @@ class MeasurementService : Service() {
                 sendMeasurement(
                     Measurement(
                         sessionId = currentSessionId,
+                        checkpointId = checkpointId,
                         timestamp = timestamp,
                         location = gpsLocation,
                         bluetoothDevices = null,
@@ -267,6 +271,7 @@ class MeasurementService : Service() {
                 sendMeasurement(
                     Measurement(
                         sessionId = currentSessionId,
+                        checkpointId = checkpointId,
                         timestamp = timestamp,
                         location = networkLocation,
                         bluetoothDevices = null,
@@ -283,6 +288,7 @@ class MeasurementService : Service() {
                 sendMeasurement(
                     Measurement(
                         sessionId = currentSessionId,
+                        checkpointId = checkpointId,
                         timestamp = timestamp,
                         location = null,
                         bluetoothDevices = bluetoothDevices,
@@ -300,6 +306,7 @@ class MeasurementService : Service() {
                 sendMeasurement(
                     Measurement(
                         sessionId = currentSessionId,
+                        checkpointId = checkpointId,
                         timestamp = timestamp,
                         location = null,
                         bluetoothDevices = null,
@@ -307,6 +314,10 @@ class MeasurementService : Service() {
                         deviceInfo = deviceInfo
                     )
                 )
+            }
+
+            if (!checkpointSent && SessionManager.currentCheckpointId == checkpointId) {
+                SessionManager.checkpointSent = true
             }
         } catch (e: Exception) {
             Log.e(TAG, "Error sending measurements", e)
@@ -443,7 +454,7 @@ class MeasurementService : Service() {
         const val CHANNEL_ID = "MeasurementServiceChannel"
         const val NOTIFICATION_ID = 1
         
-        const val SEND_INTERVAL = 10000L // 10 seconds
+        const val SEND_INTERVAL = 1_000L // ms
         
         const val EXTRA_SESSION_ID = "session_id"
         
