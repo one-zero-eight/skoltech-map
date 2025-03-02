@@ -20,6 +20,7 @@ import com.example.skoltechmapmeasurements.model.BluetoothDevice
 import com.example.skoltechmapmeasurements.model.DeviceInfo
 import com.example.skoltechmapmeasurements.model.Measurement
 import com.example.skoltechmapmeasurements.model.SessionManager
+import com.example.skoltechmapmeasurements.model.SessionManager.currentCheckpointId
 import com.example.skoltechmapmeasurements.model.WifiNetwork
 import com.example.skoltechmapmeasurements.network.MeasurementApiService
 import com.example.skoltechmapmeasurements.network.RetrofitClient
@@ -318,6 +319,11 @@ class MeasurementService : Service() {
 
             if (!checkpointSent && SessionManager.currentCheckpointId == checkpointId) {
                 SessionManager.checkpointSent = true
+                com.example.skoltechmapmeasurements.event.EventBus.postSessionUpdate(
+                    SessionManager.currentSessionId,
+                    SessionManager.currentCheckpointId,
+                    SessionManager.checkpointSent
+                )
             }
         } catch (e: Exception) {
             Log.e(TAG, "Error sending measurements", e)

@@ -42,13 +42,15 @@ data class DeviceInfo(
 )
 
 object SessionManager {
-    private var currentSessionId: String? = null
+    var currentSessionId: String? = null
     var currentCheckpointId: Int = 0
     var checkpointSent: Boolean = false
 
     fun startNewSession(): String {
         currentSessionId = UUID.randomUUID().toString()
         currentCheckpointId = 0
+        checkpointSent = false
+        com.example.skoltechmapmeasurements.event.EventBus.postSessionUpdate(currentSessionId, currentCheckpointId, checkpointSent)
         return currentSessionId!!
     }
 
@@ -57,11 +59,18 @@ object SessionManager {
     }
 
     fun incrementCheckpointId() {
+        if (currentSessionId == null) {
+            throw IllegalStateException("Session not started")
+        }
         currentCheckpointId++
         checkpointSent = false
+        com.example.skoltechmapmeasurements.event.EventBus.postSessionUpdate(currentSessionId, currentCheckpointId, checkpointSent)
     }
 
     fun endSession() {
         currentSessionId = null
+        currentCheckpointId = 0
+        checkpointSent = false
+        com.example.skoltechmapmeasurements.event.EventBus.postSessionUpdate(currentSessionId, currentCheckpointId, checkpointSent)
     }
 }

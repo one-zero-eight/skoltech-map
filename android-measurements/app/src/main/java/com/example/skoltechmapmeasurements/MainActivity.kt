@@ -152,8 +152,8 @@ class MainActivity : ComponentActivity() {
         val latestLocation by latestLocationFlow.collectAsStateWithLifecycle()
         val bluetoothDevices by bluetoothDevicesFlow.collectAsStateWithLifecycle()
         var statusText by remember { mutableStateOf("Ready to start") }
-        val checkpointId by remember { mutableIntStateOf(SessionManager.currentCheckpointId) }
-        val checkpointSent by remember { mutableStateOf(SessionManager.checkpointSent) }
+        var checkpointId by remember { mutableIntStateOf(SessionManager.currentCheckpointId) }
+        var checkpointSent by remember { mutableStateOf(SessionManager.checkpointSent) }
 
         // Observe EventBus for data updates
         DisposableEffect(Unit) {
@@ -170,15 +170,24 @@ class MainActivity : ComponentActivity() {
                 val btText = "Found ${update.deviceCount} Bluetooth devices"
                 bluetoothDevicesFlow.value = btText
             }
+
+            // Observer for session updates
+            val sessionObserver = androidx.lifecycle.Observer<com.example.skoltechmapmeasurements.event.SessionUpdate> { update ->
+                Log.d(TAG, "EventBus: Session update - ${update.sessionId}, checkpoint ${update.checkpointId}, sent=${update.checkpointSent}")
+                checkpointId = update.checkpointId
+                checkpointSent = update.checkpointSent
+            }
             
             // Start observing
             com.example.skoltechmapmeasurements.event.EventBus.locationData.observe(context, locationObserver)
             com.example.skoltechmapmeasurements.event.EventBus.bluetoothData.observe(context, bluetoothObserver)
+            com.example.skoltechmapmeasurements.event.EventBus.sessionData.observe(context, sessionObserver)
             
             onDispose {
                 // Stop observing
                 com.example.skoltechmapmeasurements.event.EventBus.locationData.removeObserver(locationObserver)
                 com.example.skoltechmapmeasurements.event.EventBus.bluetoothData.removeObserver(bluetoothObserver)
+                com.example.skoltechmapmeasurements.event.EventBus.sessionData.removeObserver(sessionObserver)
             }
         }
 
