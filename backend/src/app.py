@@ -10,6 +10,7 @@ from starlette.middleware.sessions import SessionMiddleware
 
 import src.logging_  # noqa: F401
 from src.config import settings
+from src.logging_ import logger
 
 
 @asynccontextmanager
@@ -74,6 +75,7 @@ def session_route(request: Request) -> dict:
 )
 async def measurement_route(request: Request) -> None:
     data = (await request.body()).decode()
+    logger.info(data)
 
     with open(settings.measurement_path, "a") as f:
         f.write(data + "\n")
